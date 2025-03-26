@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Javier's Maths Adventure!</title>
+<style>
+body {
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, #ff6e7f, #bfe9ff, #ffec61);
+  color: #555;
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  width: 500px;
+}
+
+button {
+  background: linear-gradient(to right, #66a6ff, #89f7fe);
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: translateY(-4px);
+}
+
+#answer, #timer, #instantResult, #nextButton, #question, #resultsTable {
+  display: none;
+}
+
+.correct { color: #32cd32; }
+.incorrect { color: #ff4500; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Javier's Maths Adventure!</h1>
+  <p>Select the type of questions:</p>
+  <select id="questionType">
+    <option value="sum">Addition</option>
+    <option value="minus">Subtraction</option>
+    <option value="times">Multiplication</option>
+    <option value="divided">Division</option>
+    <option value="mix">Mixed</option>
+  </select>
+  <br><br>
+  <button id="startButton" onclick="startTest()">Begin the Adventure!</button>
+  <p id="question"></p>
+  <input type="number" id="answer">
+  <button id="nextButton" onclick="storeAnswer()">Next</button>
+  <p id="instantResult"></p>
+  <p id="timer"></p>
+  <div id="resultsTable"></div>
+  <button id="restartButton" onclick="resetGame()" style="display: none;">Play Again!</button>
+</div>
+
+<script>
+let num1, num2, correctAnswer, questionType;
+let questionCount = 0;
+let correctAnswers = 0;
+let questions = [];
+
+document.getElementById("answer").addEventListener("keyup", function(event) {
+  if (event.key === "Enter") {
+    storeAnswer();
+  }
+});
+
+function generateQuestion() {
+  if (questionCount >= 10) {
+    endTest();
+    return;
+  }
+  document.getElementById("question").style.display = "block";
+  document.getElementById("answer").style.display = "block";
+  document.getElementById("nextButton").style.display = "block";
+  document.getElementById("instantResult").textContent = "";
+  questionType = document.getElementById("questionType").value;
+  
+  if (questionType === "mix") {
+    const types = ["sum", "minus", "times", "divided"];
+    questionType = types[Math.floor(Math.random() * types.length)];
+  }
+
+  if (questionType === "sum") {
+    num1 = Math.floor(Math.random() * 90) + 10;
+    num2 = Math.floor(Math.random() * 90) + 10;
+    correctAnswer = num1 + num2;
+  } else if (questionType === "minus") {
+    num1 = Math.floor(Math.random() * 90) + 10;
+    num2 = Math.floor(Math.random() * num1);
+    correctAnswer = num1 - num2;
+  } else if (questionType === "times") {
+    num1 = Math.floor(Math.random() * 9) + 1;
+    num2 = Math.floor(Math.random() * 9) + 1;
+    correctAnswer = num1 * num2;
+  } else if (questionType === "divided") {
+    num2 = Math.floor(Math.random() * 9) + 1;
+    correctAnswer = Math.floor(Math.random() * 9) + 1;
+    num1 = num2 * correctAnswer;
+  }
+  document.getElementById("question").textContent = `${num1} ${questionType === 'sum' ? '+' : questionType === 'minus' ? '-' : questionType === 'times' ? 'X' : '/'} ${num2} = ?`;
+  document.getElementById("answer").value = "";
+  document.getElementById("answer").focus();
+}
+
+function storeAnswer() {
+  const userAnswer = parseInt(document.getElementById("answer").value);
+  const isCorrect = userAnswer === correctAnswer;
+  if (isCorrect) correctAnswers++;
+  questions.push({
+    question: document.getElementById("question").textContent,
+    userAnswer: isNaN(userAnswer) ? "No Answer" : userAnswer,
+    correctAnswer: correctAnswer,
+    result: isCorrect ? "Y" : "N"
+  });
+  questionCount++;
+  generateQuestion();
+}
+
+function startTest() {
+  questionCount = 0;
+  correctAnswers = 0;
+  questions = [];
+  document.getElementById("startButton").style.display = "none";
+  document.getElementById("questionType").style.display = "none";
+  document.getElementById("resultsTable").style.display = "none";
+  generateQuestion();
+}
+
+function endTest() {
+  document.getElementById("question").style.display = "none";
+  document.getElementById("answer").style.display = "none";
+  document.getElementById("nextButton").style.display = "none";
+  displayResults();
+  document.getElementById("restartButton").style.display = "block";
+}
+
+function displayResults() {
+  let tableHTML = `<h3>Your Results</h3><p>Total Score: ${correctAnswers}/10</p><table border='1' style='width: 100%; text-align: center;'><tr><th>Question</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr>`;
+  questions.forEach(q => {
+    tableHTML += `<tr><td>${q.question}</td><td>${q.userAnswer}</td><td>${q.correctAnswer}</td><td>${q.result}</td></tr>`;
+  });
+  tableHTML += `</table>`;
+  document.getElementById("resultsTable").innerHTML = tableHTML;
+  document.getElementById("resultsTable").style.display = "block";
+}
+
+function resetGame() {
+  location.reload();
+}
+</script>
+</body>
+</html>
